@@ -1,0 +1,30 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject Firebase API key
+        run: sed -i "s|__FIREBASE_API_KEY__|${{ secrets.FIREBASE_API_KEY }}|g" dashboard.html
+
+      - name: Deploy to gh-pages
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add -A
+          git stash
+          git checkout -B gh-pages
+          git checkout stash -- .
+          git add -A
+          git commit -m "Deploy: inject secrets [skip ci]"
+          git push origin gh-pages --force
