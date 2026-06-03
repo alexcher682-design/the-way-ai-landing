@@ -309,6 +309,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+  import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
   import {
     getFirestore, collection, query, where,
     getCountFromServer, getDocs, Timestamp
@@ -345,7 +346,7 @@
   }
 
   // ── FIREBASE ─────────────────────────────────────────
-  const app = initializeApp({
+  const app  = initializeApp({
     apiKey:            "__FIREBASE_API_KEY__",
     authDomain:        "self-growth-ai.firebaseapp.com",
     projectId:         "self-growth-ai",
@@ -353,13 +354,19 @@
     messagingSenderId: "998783656296",
     appId:             "1:998783656296:web:c148453648866840b8b6dd",
   });
-  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  async function ensureAuth() {
+    if (!auth.currentUser) await signInAnonymously(auth);
+  }
 
   // ── LOAD DATA ─────────────────────────────────────────
   window.loadData = async function() {
     document.getElementById('refresh-btn').innerHTML = '<span class="spinner"></span>Загрузка...';
 
     try {
+      await ensureAuth();
       const usersCol = collection(db, 'users');
       const todayStart = Timestamp.fromDate(new Date(new Date().setHours(0,0,0,0)));
 
